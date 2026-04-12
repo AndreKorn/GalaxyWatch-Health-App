@@ -1,34 +1,32 @@
 # GalaxyWatch-Health-App
 
-Eine einfache Wear OS App für die **Samsung Galaxy Watch 7**, die Uhrzeit, Datum und den aktuellen Schrittzähler in
-einer textbasierten Oberfläche anzeigt.
+Wear-OS-Projekt fuer die **Samsung Galaxy Watch 7** auf Basis des offiziellen Compose-Starter-Templates.
 
 ---
 
 ## Beschreibung
 
-Diese App läuft nativ auf der Galaxy Watch 7 (Wear OS) und zeigt auf dem Zifferblatt in Echtzeit:
+Dieses Repository enthaelt aktuell eine lauffaehige **Wear OS Template-App** mit:
 
-- 🕐 die aktuelle **Uhrzeit** im Format `HH:mm`
-- 📅 das aktuelle **Datum** im Format `dd.MM.yyyy`
-- 👟 die **täglichen Schritte** über den integrierten Schrittzähler-Sensor
+- einer Compose-basierten Hauptansicht (`Hello World`)
+- einem Beispiel-Tile (`Example tile`)
+- einer Beispiel-Complication (`Example complication`)
 
-Die Benutzeroberfläche wird mit **Jetpack Compose for Wear OS** entwickelt und passt sich an das runde Display der
-Galaxy Watch 7 an.
+Die in `## Funktionsumfang` beschriebenen Features (Uhrzeit als Text, Datum, Schritte) sind als Zielbild dokumentiert,
+im aktuellen Code-Stand aber noch nicht umgesetzt.
 
 ---
 
 ## Anforderungen
 
-| Anforderung            | Details                                                                                                             |
-|------------------------|---------------------------------------------------------------------------------------------------------------------|
-| **IDE**                | [Android Studio](https://developer.android.com/studio) (Koala oder neuer) **oder** IntelliJ IDEA mit Android-Plugin |
-| **Programmiersprache** | [Kotlin](https://kotlinlang.org/)                                                                                   |
-| **UI-Framework**       | [Jetpack Compose for Wear OS](https://developer.android.com/training/wearables/compose)                             |
-| **API**                | SensorManager API (`TYPE_STEP_COUNTER`)                                                                             |
-| **Berechtigung**       | `ACTIVITY_RECOGNITION` (wird zur Laufzeit abgefragt)                                                                |
-| **Min. SDK**           | API 30 (Wear OS 3.0)                                                                                                |
-| **Target SDK**         | API 34                                                                                                              |
+| Anforderung            | Details                                                                                                               |
+|------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| **IDE**                | [Android Studio](https://developer.android.com/studio) (aktuelle stabile Version) **oder** IntelliJ mit Android-Plugin |
+| **Programmiersprache** | [Kotlin](https://kotlinlang.org/)                                                                                     |
+| **UI-Framework**       | [Jetpack Compose for Wear OS](https://developer.android.com/training/wearables/compose)                               |
+| **Min. SDK**           | API 30 (Wear OS 3.0)                                                                                                  |
+| **Compile SDK**        | API 36                                                                                                                |
+| **Target SDK**         | API 36                                                                                                                |
 
 ### IntelliJ IDEA – Plugin installieren
 
@@ -75,6 +73,12 @@ adb connect <IP>:<Port>
 
 4. Wähle in Android Studio / IntelliJ deine Uhr als Zielgerät aus und starte die App über den **Run**-Button (▶).
 
+### 5. Build pruefen (optional)
+
+```bash
+./gradlew :app:assembleDebug
+```
+
 ---
 
 ## Funktionsumfang
@@ -110,31 +114,50 @@ Beispiele von 8:00 bis 9:00 Uhr:
 
 ---
 
+## Aktueller Implementierungsstand
+
+Der aktuelle Code-Stand entspricht noch weitgehend dem Starter-Template:
+
+- `MainActivity` zeigt einen statischen `Hello World`-Text in Compose.
+- `MainTileService` liefert ein Beispiel-Tile.
+- `MainComplicationService` liefert eine Beispiel-Complication (Wochentag).
+
+Damit ist die Basis fuer die in `## Funktionsumfang` beschriebenen Features vorhanden, die konkrete
+Health-Logik (z. B. `TYPE_STEP_COUNTER`) fehlt jedoch noch.
+
+---
+
 ## Projektstruktur (Überblick)
 
 ```
 GalaxyWatch-Health-App/
 ├── app/
 │   ├── src/main/
-│   │   ├── AndroidManifest.xml       # Berechtigungen & App-Konfiguration
-│   │   ├── java/.../MainActivity.kt  # Einstiegspunkt der App
-│   │   └── java/.../WearApp.kt       # Composable UI (Uhrzeit, Datum, Schritte)
+│   │   ├── AndroidManifest.xml
+│   │   ├── java/com/example/myapplication/
+│   │   │   ├── presentation/MainActivity.kt
+│   │   │   ├── tile/MainTileService.kt
+│   │   │   └── complication/MainComplicationService.kt
+│   │   └── res/values/strings.xml
 │   └── build.gradle.kts
 ├── build.gradle.kts
+├── gradle/libs.versions.toml
 └── README.md
 ```
 
 ---
 
-## Benötigte Berechtigungen (`AndroidManifest.xml`)
+## Benoetigte Berechtigungen (`AndroidManifest.xml`)
 
 ```xml
-
-<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+<uses-permission android:name="android.permission.WAKE_LOCK"/>
 ```
 
-Diese Berechtigung ist ab Android 10 (API 29) erforderlich, um auf den Schrittzähler-Sensor zugreifen zu dürfen, und
-wird zur Laufzeit vom Nutzer bestätigt.
+Hinweis:
+
+- `ACTIVITY_RECOGNITION` ist aktuell **nicht** im Manifest eingetragen.
+- Fuer den spaeteren Schrittzaehler (`TYPE_STEP_COUNTER`) muss diese Berechtigung bei der Implementierung
+  hinzugefuegt und zur Laufzeit abgefragt werden.
 
 ---
 
