@@ -99,8 +99,8 @@ Beispiele von 8:00 bis 9:00 Uhr:
 | Uhrzeit       | Text                          |
 |---------------|-------------------------------|
 | 8:00          | acht Uhr                      |
-| 8:01 – 8:05   | kurz nach acht Uhr            |
-| 8:06 – 8:10   | nach acht Uhr                 |
+| 8:01 – 8:05   | kurz nach acht   |
+| 8:06 – 8:10   | nach acht                 |
 | 8:11 – 8:14   | gleich viertel nach acht      |
 | 8:15 – 8:19   | viertel nach acht             |
 | 8:20 – 8:29   | gleich halb neun              |
