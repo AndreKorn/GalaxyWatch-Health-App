@@ -159,6 +159,7 @@ fun LabelValue(label: String, value: String) {
     )
 }
 
+@Preview(device = WearDevices.LARGE_ROUND, showSystemUi = true)
 @Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
 @Composable
 fun DefaultPreview() {
