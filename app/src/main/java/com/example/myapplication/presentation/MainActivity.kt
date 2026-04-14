@@ -12,27 +12,26 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Arrangement
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import androidx.wear.compose.material.MaterialTheme
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.tooling.preview.devices.WearDevices
 import com.example.myapplication.R
@@ -84,90 +83,141 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Haupt-Composable der App.
+ * Verwendet [ScalingLazyColumn] fuer korrekte Darstellung auf runden Displays:
+ * Inhalte werden am Rand automatisch skaliert und verblasst.
+ */
 @Composable
 fun WearApp(
     uiState: HealthUiState,
     onRequestActivityPermission: () -> Unit
 ) {
     MyApplicationTheme {
-        Box(
+        ScalingLazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colors.background),
-            contentAlignment = Alignment.Center
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            HealthDashboard(
-                uiState = uiState,
-                onRequestActivityPermission = onRequestActivityPermission
-            )
-            // Copyright-Hinweis am unteren Rand, mit Padding fuer runde Displays
-            Text(
-                text = stringResource(R.string.copyright_notice),
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colors.secondary,
-                fontSize = 10.sp,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 24.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun HealthDashboard(
-    uiState: HealthUiState,
-    onRequestActivityPermission: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        LabelValue(label = stringResource(R.string.label_time), value = uiState.time)
-        LabelValue(label = stringResource(R.string.label_time_text), value = uiState.timeText)
-        LabelValue(label = stringResource(R.string.label_date), value = uiState.date)
-
-        when {
-            !uiState.isStepSensorAvailable -> {
-                Text(
-                    text = stringResource(R.string.sensor_unavailable),
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colors.primary
+            // Uhrzeit – groesste Darstellung als Hauptinformation
+            item {
+                LabelValue(
+                    label = stringResource(R.string.label_time),
+                    value = uiState.time,
+                    valueStyle = MaterialTheme.typography.title1
                 )
             }
 
-            !uiState.hasActivityPermission -> {
-                Text(
-                    text = stringResource(R.string.permission_required),
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colors.primary
+            // Uhrzeit als Text – sekundaere Information
+            item {
+                LabelValue(
+                    label = stringResource(R.string.label_time_text),
+                    value = uiState.timeText
                 )
-                Button(onClick = onRequestActivityPermission) {
-                    Text(text = stringResource(R.string.permission_button))
+            }
+
+            // Datum
+            item {
+                LabelValue(
+                    label = stringResource(R.string.label_date),
+                    value = uiState.date
+                )
+            }
+
+            // Schritte / Berechtigungs-UI / Sensor-Status
+            when {
+                !uiState.isStepSensorAvailable -> {
+                    item {
+                        Text(
+                            text = stringResource(R.string.sensor_unavailable),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.body2,
+                            color = MaterialTheme.colors.error,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+
+                !uiState.hasActivityPermission -> {
+                    item {
+                        Text(
+                            text = stringResource(R.string.permission_required),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.body2,
+                            color = MaterialTheme.colors.secondary
+                        )
+                    }
+                    item {
+                        Button(
+                            onClick = onRequestActivityPermission,
+                            modifier = Modifier.fillMaxWidth(0.75f)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.permission_button),
+                                style = MaterialTheme.typography.button
+                            )
+                        }
+                    }
+                }
+
+                else -> {
+                    item {
+                        LabelValue(
+                            label = stringResource(R.string.label_steps),
+                            value = uiState.stepsToday.toString()
+                        )
+                    }
                 }
             }
 
-            else -> {
-                LabelValue(
-                    label = stringResource(R.string.label_steps),
-                    value = uiState.stepsToday.toString()
+            // Copyright-Hinweis – caption2 (12sp) statt 10sp fuer bessere Lesbarkeit
+            item {
+                Text(
+                    text = stringResource(R.string.copyright_notice),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.caption2,
+                    color = MaterialTheme.colors.onSurfaceVariant
                 )
             }
         }
     }
 }
 
+/**
+ * Stellt ein Label-Value-Paar mit visueller Hierarchie dar.
+ *
+ * - **Label**: klein (caption1, 14sp), hellgrau (onSurfaceVariant) – beschreibend
+ * - **Value**: gross (body1/title1, 16–24sp), weiss (onBackground) – Hauptinformation
+ *
+ * @param label Beschreibungstext (z.B. "Uhrzeit")
+ * @param value Anzeigewert (z.B. "08:45")
+ * @param valueStyle Textstil fuer den Wert, Standard: body1 (16sp)
+ */
 @Composable
-fun LabelValue(label: String, value: String) {
-    Text(
-        text = "$label: $value",
-        textAlign = TextAlign.Center,
-        color = MaterialTheme.colors.primary,
+fun LabelValue(
+    label: String,
+    value: String,
+    valueStyle: TextStyle = MaterialTheme.typography.body1
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
-    )
+    ) {
+        Text(
+            text = label,
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.caption1,
+            color = MaterialTheme.colors.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            textAlign = TextAlign.Center,
+            style = valueStyle,
+            color = MaterialTheme.colors.onBackground
+        )
+    }
 }
 
 @Preview(device = WearDevices.LARGE_ROUND, showSystemUi = true)
