@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Button
@@ -98,6 +99,16 @@ fun WearApp(
             HealthDashboard(
                 uiState = uiState,
                 onRequestActivityPermission = onRequestActivityPermission
+            )
+            // Copyright-Hinweis am unteren Rand, mit Padding fuer runde Displays
+            Text(
+                text = stringResource(R.string.copyright_notice),
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colors.secondary,
+                fontSize = 10.sp,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 24.dp)
             )
         }
     }

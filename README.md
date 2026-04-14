@@ -325,4 +325,6 @@ Hinweis:
 
 ## Lizenz
 
+Copyright (c) 2026 Andre Korn
+
 Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
