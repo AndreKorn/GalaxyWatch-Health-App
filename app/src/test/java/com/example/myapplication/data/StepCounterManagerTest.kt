@@ -3,6 +3,7 @@ package com.example.myapplication.data
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import io.mockk.*
 import org.junit.After
@@ -93,7 +94,7 @@ class StepCounterManagerTest {
 
         every { mockContext.getSystemService(Context.SENSOR_SERVICE) } returns mockSensorManager
         every { mockSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) } returns mockSensor
-        every { mockSensorManager.registerListener(any(), any(), any()) } returns true
+        every { mockSensorManager.registerListener(any<SensorEventListener>(), any<Sensor>(), any<Int>()) } returns true
         every { mockContext.getSharedPreferences(any(), any()) } returns
             context.getSharedPreferences("step_counter_prefs", Context.MODE_PRIVATE)
 
@@ -116,7 +117,7 @@ class StepCounterManagerTest {
 
         every { mockContext.getSystemService(Context.SENSOR_SERVICE) } returns mockSensorManager
         every { mockSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) } returns mockSensor
-        every { mockSensorManager.registerListener(any(), any(), any()) } returns true
+        every { mockSensorManager.registerListener(any<SensorEventListener>(), any<Sensor>(), any<Int>()) } returns true
         every { mockContext.getSharedPreferences(any(), any()) } returns
             context.getSharedPreferences("step_counter_prefs", Context.MODE_PRIVATE)
 
@@ -228,7 +229,7 @@ class StepCounterManagerTest {
 
         every { mockContext.getSystemService(Context.SENSOR_SERVICE) } returns mockSensorManager
         every { mockSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) } returns mockSensor
-        every { mockSensorManager.registerListener(any(), any(), any()) } returns true
+        every { mockSensorManager.registerListener(any<SensorEventListener>(), any<Sensor>(), any<Int>()) } returns true
         every { mockSensorManager.unregisterListener(any<SensorEventListener>()) } just runs
         every { mockContext.getSharedPreferences(any(), any()) } returns
             context.getSharedPreferences("step_counter_prefs", Context.MODE_PRIVATE)
@@ -236,7 +237,7 @@ class StepCounterManagerTest {
         val manager = StepCounterManager(mockContext, onStepsChanged, onSensorUnavailable)
 
         manager.start()
-        verify(exactly = 1) { mockSensorManager.registerListener(any(), mockSensor, SensorManager.SENSOR_DELAY_NORMAL) }
+        verify(exactly = 1) { mockSensorManager.registerListener(any<SensorEventListener>(), mockSensor, SensorManager.SENSOR_DELAY_NORMAL) }
 
         manager.stop()
         verify(exactly = 1) { mockSensorManager.unregisterListener(any<SensorEventListener>()) }
@@ -250,7 +251,7 @@ class StepCounterManagerTest {
 
         every { mockContext.getSystemService(Context.SENSOR_SERVICE) } returns mockSensorManager
         every { mockSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) } returns mockSensor
-        every { mockSensorManager.registerListener(any(), any(), any()) } returns true
+        every { mockSensorManager.registerListener(any<SensorEventListener>(), any<Sensor>(), any<Int>()) } returns true
         every { mockContext.getSharedPreferences(any(), any()) } returns
             context.getSharedPreferences("step_counter_prefs", Context.MODE_PRIVATE)
 
@@ -261,17 +262,24 @@ class StepCounterManagerTest {
         manager.start()
 
         // Sollte nur einmal registrieren
-        verify(exactly = 1) { mockSensorManager.registerListener(any(), mockSensor, SensorManager.SENSOR_DELAY_NORMAL) }
+        verify(exactly = 1) { mockSensorManager.registerListener(any<SensorEventListener>(), mockSensor, SensorManager.SENSOR_DELAY_NORMAL) }
     }
 
-    // Helper function to create mock SensorEvent
+    // Helper: SensorEvent per Reflection erstellen, da sensor/values Java-Fields sind
     private fun mockSensorEvent(sensorType: Int, values: FloatArray): SensorEvent {
-        val sensorEvent = mockk<SensorEvent>(relaxed = true)
-        val sensor = mockk<Sensor>(relaxed = true)
+        val constructor = SensorEvent::class.java.getDeclaredConstructor(Int::class.javaPrimitiveType)
+        constructor.isAccessible = true
+        val sensorEvent = constructor.newInstance(values.size)
 
+        // values-Feld direkt setzen
+        sensorEvent.values = values
+
+        // sensor-Feld per Reflection setzen (Sensor hat keinen oeffentlichen Konstruktor)
+        val sensor = mockk<Sensor>(relaxed = true)
         every { sensor.type } returns sensorType
-        every { sensorEvent.sensor } returns sensor
-        every { sensorEvent.values } returns values
+
+        val sensorField = SensorEvent::class.java.getField("sensor")
+        sensorField.set(sensorEvent, sensor)
 
         return sensorEvent
     }

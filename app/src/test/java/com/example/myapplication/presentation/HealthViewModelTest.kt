@@ -2,7 +2,6 @@ package com.example.myapplication.presentation
 
 import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
@@ -13,6 +12,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /**
@@ -41,14 +41,12 @@ class HealthViewModelTest {
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        application = mockk<Application>(relaxed = true)
-        every { application.applicationContext } returns application
+        application = RuntimeEnvironment.getApplication()
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
-        clearAllMocks()
     }
 
     @Test
